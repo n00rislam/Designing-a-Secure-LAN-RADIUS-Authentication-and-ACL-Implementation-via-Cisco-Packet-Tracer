@@ -1,0 +1,69 @@
+##########################
+# Router Configuration
+##########################
+enable
+configure terminal
+
+# Set interface IP addresses
+interface GigabitEthernet0/0
+ip address 192.168.1.254 255.255.255.0
+no shutdown
+exit
+
+interface GigabitEthernet0/1
+ip address 172.16.1.254 255.255.255.0
+no shutdown
+exit
+
+# Enable routing
+ip routing
+
+##########################
+# RADIUS Server Configuration
+##########################
+enable
+configure terminal
+
+# Define RADIUS Server
+radius-server host 192.168.1.100 key SecureKey123
+
+# Enable AAA authentication
+aaa new-model
+aaa authentication login default group radius local
+aaa authorization exec default group radius local
+aaa accounting exec default start-stop group radius
+
+exit
+
+##########################
+# Access Control List (ACL) Configuration
+##########################
+enable
+configure terminal
+
+# Create ACL to allow LAN1 to access LAN2
+access-list 100 permit ip 192.168.1.0 0.0.0.255 172.16.1.0 0.0.0.255
+
+# Deny unauthorized access
+access-list 100 deny ip any any
+
+# Apply ACL to interface
+interface GigabitEthernet0/1
+ip access-group 100 in
+exit
+
+##########################
+# Configure Default Gateway on PCs
+##########################
+# On PC0, PC1, PC2 (LAN1)
+ip address 192.168.1.X 255.255.255.0  # X = 1,2,3 for different PCs
+default gateway 192.168.1.254
+
+# On PC3, PC4, PC5 (LAN2)
+ip address 172.16.1.X 255.255.255.0  # X = 1,2,3 for different PCs
+default gateway 172.16.1.254
+
+##########################
+# Save Configuration
+##########################
+write memory
